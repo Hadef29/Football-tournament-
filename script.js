@@ -1,7 +1,8 @@
-// ---------------- State ----------------
+(function(){
+  // ---------------- State ----------------
   let teams = [];
   let matches = [];
-  let activeTab = 'teams';
+  let activeView = 'dashboard';
 
   const el = id => document.getElementById(id);
   const teamInput = el('teamInput');
@@ -18,25 +19,47 @@
   const exportBtn = el('exportBtn');
   const importFile = el('importFile');
   const leagueNameInput = el('leagueName');
+  const mobileTitle = el('mobileTitle');
   const doubleRoundToggle = el('doubleRoundToggle');
   const navFixturesBtn = el('navFixturesBtn');
   const navTableBtn = el('navTableBtn');
   const navTeamCount = el('navTeamCount');
+  const dashEmpty = el('dashEmpty');
+  const dashContent = el('dashContent');
+  const leaderName = el('leaderName');
+  const leaderStats = el('leaderStats');
+  const dashMiniTable = el('dashMiniTable');
+  const dashNextFixtures = el('dashNextFixtures');
+  const dashGoTeams = el('dashGoTeams');
+  const sidebar = el('sidebar');
+  const scrim = el('scrim');
+  const hamburgerBtn = el('hamburgerBtn');
 
   leagueNameInput.addEventListener('input', ()=>{
-    document.title = (leagueNameInput.value.trim() || 'FootBall League') + ' — Fixtures & Table';
+    const name = leagueNameInput.value.trim() || 'FootBall League';
+    document.title = name;
+    mobileTitle.textContent = name;
   });
 
-  // ---------------- Tabs ----------------
-  function switchTab(tab){
-    if((tab === 'fixtures' && navFixturesBtn.disabled) || (tab === 'table' && navTableBtn.disabled)) return;
-    activeTab = tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-    document.querySelectorAll('.tabpanel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  // ---------------- Navigation ----------------
+  function switchView(view){
+    if((view === 'fixtures' && navFixturesBtn.disabled) || (view === 'table' && navTableBtn.disabled)) return;
+    activeView = view;
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+    closeSidebar();
   }
-  document.querySelectorAll('.tab-btn').forEach(b=>{
-    b.addEventListener('click', ()=> switchTab(b.dataset.tab));
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    b.addEventListener('click', ()=> switchView(b.dataset.view));
   });
+  dashGoTeams.addEventListener('click', ()=> switchView('teams'));
+
+  function openSidebar(){ sidebar.classList.add('open'); scrim.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); }
+  hamburgerBtn.addEventListener('click', ()=>{
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  scrim.addEventListener('click', closeSidebar);
 
   // ---------------- Team management ----------------
   function addTeam(name){
@@ -51,6 +74,7 @@
     teamInput.value = '';
     teamInput.focus();
     renderTeams();
+    computeStandings();
   }
 
   function removeTeam(name){
@@ -58,7 +82,7 @@
     matches = [];
     navFixturesBtn.disabled = true;
     navTableBtn.disabled = true;
-    if(activeTab !== 'teams') switchTab('teams');
+    if(activeView === 'fixtures' || activeView === 'table') switchView('teams');
     renderTeams();
     computeStandings();
   }
@@ -134,7 +158,7 @@
     computeStandings();
     navFixturesBtn.disabled = false;
     navTableBtn.disabled = false;
-    switchTab('fixtures');
+    switchView('fixtures');
   }
 
   generateBtn.addEventListener('click', generateFixtures);
@@ -147,7 +171,7 @@
     navFixturesBtn.disabled = true;
     navTableBtn.disabled = true;
     computeStandings();
-    switchTab('teams');
+    switchView('dashboard');
   });
 
   // ---------------- Fixtures rendering ----------------
@@ -241,7 +265,6 @@
     const val = e.target.value;
     m[field] = val === '' ? null : Math.max(0, parseInt(val, 10) || 0);
     computeStandings();
-    // reflect played-state border without a full re-render (keeps focus)
     const ticket = e.target.closest('.match-ticket');
     if(m.hg !== null && m.ag !== null) ticket.classList.add('played');
     else ticket.classList.remove('played');
@@ -255,9 +278,8 @@
     m[field] = Math.max(0, (m[field] || 0) + delta);
     const countEl = el(`count-${m.id}-${field}`);
     countEl.textContent = m[field];
-    const badge = btn.closest('.match-ticket').querySelector('.cards-toggle .badge');
-    const total = (m.hy||0)+(m.hr||0)+(m.ay||0)+(m.ar||0);
     const toggleEl = btn.closest('.match-ticket').querySelector('.cards-toggle');
+    const total = (m.hy||0)+(m.hr||0)+(m.ay||0)+(m.ar||0);
     let badgeEl = toggleEl.querySelector('.badge');
     if(total > 0){
       if(!badgeEl){
@@ -298,6 +320,7 @@
 
     const ranked = tieBreakSort(Object.values(stats), playedMatches, 0);
     renderStandings(ranked);
+    renderDashboard(ranked, playedMatches);
 
     chipPlayed.textContent = playedMatches.length;
     chipTotal.textContent = matches.length;
@@ -382,6 +405,58 @@
     });
   }
 
+  // ---------------- Dashboard ----------------
+  function renderDashboard(ranked, playedMatches){
+    const hasTeams = teams.length >= 2;
+    if(!hasTeams){
+      dashEmpty.style.display = 'block';
+      dashContent.style.display = 'none';
+      return;
+    }
+    dashEmpty.style.display = 'none';
+    dashContent.style.display = 'grid';
+
+    if(ranked.length && playedMatches.length){
+      const leader = ranked[0];
+      leaderName.textContent = leader.name;
+      leaderStats.innerHTML = `
+        <span>P <b>${leader.played}</b></span>
+        <span>GD <b>${leader.gd > 0 ? '+' + leader.gd : leader.gd}</b></span>
+        <span>Pts <b>${leader.pts}</b></span>
+      `;
+    } else {
+      leaderName.textContent = '—';
+      leaderStats.innerHTML = `<span>No matches played yet</span>`;
+    }
+
+    dashMiniTable.innerHTML = '';
+    if(ranked.length){
+      ranked.slice(0, 5).forEach((s, idx)=>{
+        const row = document.createElement('div');
+        row.className = 'mini-row';
+        row.innerHTML = `<span class="pos">${idx+1}</span><span class="name">${escapeHtml(s.name)}</span><span class="pts">${s.pts} pts</span>`;
+        dashMiniTable.appendChild(row);
+      });
+    } else {
+      dashMiniTable.innerHTML = `<div class="empty-state">Generate fixtures to see standings.</div>`;
+    }
+
+    dashNextFixtures.innerHTML = '';
+    const upcoming = matches.filter(m => m.hg === null || m.ag === null).slice(0, 5);
+    if(upcoming.length){
+      upcoming.forEach(m=>{
+        const row = document.createElement('div');
+        row.className = 'next-fixture';
+        row.innerHTML = `<span>${escapeHtml(m.home)} v ${escapeHtml(m.away)}</span><span class="md">MD ${m.round}</span>`;
+        dashNextFixtures.appendChild(row);
+      });
+    } else if(matches.length){
+      dashNextFixtures.innerHTML = `<div class="empty-state">All matches played!</div>`;
+    } else {
+      dashNextFixtures.innerHTML = `<div class="empty-state">Generate fixtures first.</div>`;
+    }
+  }
+
   // ---------------- Export / Import ----------------
   exportBtn.addEventListener('click', ()=>{
     const data = { leagueName: leagueNameInput.value, teams, matches, doubleRound: doubleRoundToggle.checked };
@@ -406,7 +481,8 @@
         matches = data.matches;
         if(typeof data.leagueName === 'string' && data.leagueName.trim()){
           leagueNameInput.value = data.leagueName;
-          document.title = data.leagueName + ' — Fixtures & Table';
+          document.title = data.leagueName;
+          mobileTitle.textContent = data.leagueName;
         }
         doubleRoundToggle.checked = !!data.doubleRound;
         renderTeams();
@@ -414,7 +490,7 @@
         navTableBtn.disabled = matches.length === 0;
         if(matches.length) renderFixtures();
         computeStandings();
-        switchTab(matches.length ? 'table' : 'teams');
+        switchView(matches.length ? 'table' : 'teams');
       }catch(err){
         alert('Could not read that file — it does not look like a valid league export.');
       }
@@ -426,3 +502,4 @@
   // ---------------- Init ----------------
   renderTeams();
   computeStandings();
+})();
