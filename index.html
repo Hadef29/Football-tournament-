@@ -1,73 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Tournament Manager</title>
-
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
 <div class="container">
 
-<h1>🏆 Football Tournament Manager</h1>
+    <h1>🏆 Football Tournament Manager</h1>
 
-<div class="card">
+    <nav class="tabs">
+        <button onclick="showTab('teams')">👥 Teams</button>
+        <button onclick="showTab('fixtures')">📅 Fixtures</button>
+        <button onclick="showTab('standings')">📊 Standings</button>
+        <button onclick="showTab('discipline')">🟨 Discipline</button>
+    </nav>
 
-<h2>Add Team</h2>
+    <section id="teams" class="tab">
+        <h2>Teams</h2>
 
-<input id="teamName" type="text" placeholder="Enter Team Name">
+        <input id="teamName" placeholder="Enter team name">
+        <button onclick="addTeam()">Add Team</button>
 
-<button onclick="addTeam()">Add Team</button>
+        <div id="teamList"></div>
+    </section>
 
-</div>
+    <section id="fixtures" class="tab" style="display:none;">
+        <h2>Fixtures</h2>
 
-<div class="card">
+        <button onclick="generateFixtures()">
+            Generate League Fixtures
+        </button>
 
-<h2>League Table</h2>
+        <div id="fixtureList"></div>
+    </section>
 
-<table>
+    <section id="standings" class="tab" style="display:none;">
+        <h2>Standings</h2>
 
-<thead>
+        <table>
+            <thead>
+                <tr>
+                    <th>Pos</th>
+                    <th>Team</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>L</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>GD</th>
+                    <th>Pts</th>
+                </tr>
+            </thead>
 
-<tr>
-<th>Pos</th>
-<th>Team</th>
-<th>P</th>
-<th>W</th>
-<th>D</th>
-<th>L</th>
-<th>GF</th>
-<th>GA</th>
-<th>GD</th>
-<th>Pts</th>
-</tr>
+            <tbody id="tableBody"></tbody>
+        </table>
 
-</thead>
+    </section>
 
-<tbody id="tableBody">
+    <section id="discipline" class="tab" style="display:none;">
+        <h2>Discipline</h2>
 
-</tbody>
+        <div id="disciplineTable"></div>
 
-</table>
-
-</div>
-
-<div class="card">
-
-<h2>Fixtures</h2>
-
-<div id="fixtures">
-No fixtures generated yet.
-</div>
-
-</div>
+    </section>
 
 </div>
 
 <script src="script.js"></script>
-
-</body>
-</html>
