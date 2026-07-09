@@ -1,241 +1,249 @@
+// ===============================
+// Football Tournament Manager
+// Section 1
+// ===============================
+
 let teams = [];
 let fixtures = [];
 
-// ---------- TAB SYSTEM ----------
-function showTab(tabId) {
-    document.querySelectorAll(".tab").forEach(tab => {
-        tab.style.display = "none";
-    });
+// ---------- Load Saved Data ----------
+window.onload = function () {
 
-    document.getElementById(tabId).style.display = "block";
-}
+    const savedTeams = localStorage.getItem("teams");
+    const savedFixtures = localStorage.getItem("fixtures");
 
-// ---------- ADD TEAM ----------
-function addTeam() {
+    if (savedTeams)
+        teams = JSON.parse(savedTeams);
 
-    const input = document.getElementById("teamName");
-    const name = input.value.trim();
-
-    if(name===""){
-        alert("Enter a team name");
-        return;
-    }
-
-    if(teams.find(t=>t.name===name)){
-        alert("Team already exists");
-        return;
-    }
-
-    teams.push({
-        name:name,
-        played:0,
-        wins:0,
-        draws:0,
-        losses:0,
-        gf:0,
-        ga:0,
-        gd:0,
-        points:0,
-        yellow:0,
-        red:0
-    });
-
-    input.value="";
+    if (savedFixtures)
+        fixtures = JSON.parse(savedFixtures);
 
     updateTeamList();
     updateTable();
+    updateDashboard();
+
+};
+
+// ---------- Save ----------
+function saveData() {
+
+    localStorage.setItem("teams", JSON.stringify(teams));
+    localStorage.setItem("fixtures", JSON.stringify(fixtures));
+
 }
 
-// ---------- TEAM LIST ----------
-function updateTeamList(){
+// ---------- Navigation ----------
+function showPage(page) {
 
-    let div=document.getElementById("teamList");
+    document.querySelectorAll(".page").forEach(p => {
 
-    div.innerHTML="";
+        p.style.display = "none";
 
-    teams.forEach((team,index)=>{
+    });
 
-        div.innerHTML+=`
-        <p>${index+1}. ${team.name}</p>
-        `;
+    document.getElementById(page).style.display = "block";
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+
+        btn.classList.remove("active");
 
     });
 
 }
 
-// ---------- STANDINGS ----------
-function updateTable(){
+// ---------- Add Team ----------
+function addTeam() {
 
-teams.sort((a,b)=>{
+    const input = document.getElementById("teamName");
 
-if(b.points!=a.points) return b.points-a.points;
+    const name = input.value.trim();
 
-if(b.gd!=a.gd) return b.gd-a.gd;
+    if (name === "") {
 
-if(b.gf!=a.gf) return b.gf-a.gf;
+        alert("Enter a team name.");
 
-return a.name.localeCompare(b.name);
-
-});
-
-let body=document.getElementById("tableBody");
-
-body.innerHTML="";
-
-teams.forEach((t,index)=>{
-
-body.innerHTML+=`
-<tr>
-
-<td>${index+1}</td>
-<td>${t.name}</td>
-<td>${t.played}</td>
-<td>${t.wins}</td>
-<td>${t.draws}</td>
-<td>${t.losses}</td>
-<td>${t.gf}</td>
-<td>${t.ga}</td>
-<td>${t.gd}</td>
-<td>${t.points}</td>
-
-</tr>
-`;
-
-});
-
-}
-// ---------- GENERATE FIXTURES ----------
-function generateFixtures() {
-
-    if (teams.length < 2) {
-        alert("Add at least 2 teams.");
         return;
-    }
-
-    fixtures = [];
-
-    let fixtureList = document.getElementById("fixtureList");
-    fixtureList.innerHTML = "";
-
-    for (let i = 0; i < teams.length; i++) {
-
-        for (let j = i + 1; j < teams.length; j++) {
-
-            fixtures.push({
-                home: teams[i].name,
-                away: teams[j].name,
-                homeGoals: "",
-                awayGoals: "",
-                played: false
-            });
-
-        }
 
     }
 
-    fixtures.forEach((match, index) => {
+    if (teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
 
-        fixtureList.innerHTML += `
-        <div class="card">
+        alert("Team already exists.");
 
-            <h3>Match ${index + 1}</h3>
+        return;
 
-            <b>${match.home}</b>
+    }
 
-            <input
-                type="number"
-                min="0"
-                id="hg${index}"
-                placeholder="Goals"
-                style="width:70px;">
+    teams.push({
 
-            -
+        id: Date.now(),
 
-            <input
-                type="number"
-                min="0"
-                id="ag${index}"
-                placeholder="Goals"
-                style="width:70px;">
+        name: name,
 
-            <b>${match.away}</b>
+        played: 0,
 
-            <br><br>
+        wins: 0,
 
-            <button onclick="saveResult(${index})">
-                Save Result
-            </button>
+        draws: 0,
 
-        </div>
-        `;
+        losses: 0,
+
+        gf: 0,
+
+        ga: 0,
+
+        gd: 0,
+
+        points: 0,
+
+        yellow: 0,
+
+        red: 0
 
     });
 
-}
-function saveResult(index){
+    input.value = "";
 
-    const homeGoals = parseInt(document.getElementById("hg"+index).value);
-    const awayGoals = parseInt(document.getElementById("ag"+index).value);
+    saveData();
 
-    if(isNaN(homeGoals) || isNaN(awayGoals)){
-        alert("Enter both scores.");
-        return;
-    }
-
-    let match = fixtures[index];
-
-    if(match.played){
-        alert("Result already saved.");
-        return;
-    }
-
-    match.played = true;
-
-    let home = teams.find(t => t.name === match.home);
-    let away = teams.find(t => t.name === match.away);
-
-    home.played++;
-    away.played++;
-
-    home.gf += homeGoals;
-    home.ga += awayGoals;
-
-    away.gf += awayGoals;
-    away.ga += homeGoals;
-
-    home.gd = home.gf - home.ga;
-    away.gd = away.gf - away.ga;
-
-    if(homeGoals > awayGoals){
-
-        home.wins++;
-        away.losses++;
-
-        home.points += 3;
-
-    }
-
-    else if(homeGoals < awayGoals){
-
-        away.wins++;
-        home.losses++;
-
-        away.points += 3;
-
-    }
-
-    else{
-
-        home.draws++;
-        away.draws++;
-
-        home.points++;
-        away.points++;
-
-    }
+    updateTeamList();
 
     updateTable();
 
-    alert("Result Saved!");
+    updateDashboard();
+
+}
+
+// ---------- Delete Team ----------
+function deleteTeam(id) {
+
+    if (!confirm("Delete this team?"))
+
+        return;
+
+    teams = teams.filter(team => team.id !== id);
+
+    saveData();
+
+    updateTeamList();
+
+    updateTable();
+
+    updateDashboard();
+
+}
+
+// ---------- Team List ----------
+function updateTeamList() {
+
+    const list = document.getElementById("teamList");
+
+    list.innerHTML = "";
+
+    if (teams.length === 0) {
+
+        list.innerHTML = "<p>No teams added.</p>";
+
+        return;
+
+    }
+
+    teams.forEach(team => {
+
+        list.innerHTML += `
+
+        <div class="team-item">
+
+            <span>
+
+                ⚽ ${team.name}
+
+            </span>
+
+            <button onclick="deleteTeam(${team.id})">
+
+                Delete
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+// ---------- Dashboard ----------
+function updateDashboard() {
+
+    document.getElementById("teamCount").textContent = teams.length;
+
+    document.getElementById("matchCount").textContent = fixtures.length;
+
+    let played = fixtures.filter(f => f.played).length;
+
+    document.getElementById("playedCount").textContent = played;
+
+    document.getElementById("remainingCount").textContent = fixtures.length - played;
+
+}
+
+// ---------- Standings ----------
+function updateTable() {
+
+    teams.sort((a, b) => {
+
+        if (b.points !== a.points)
+
+            return b.points - a.points;
+
+        if (b.gd !== a.gd)
+
+            return b.gd - a.gd;
+
+        if (b.gf !== a.gf)
+
+            return b.gf - a.gf;
+
+        return a.name.localeCompare(b.name);
+
+    });
+
+    const body = document.getElementById("tableBody");
+
+    body.innerHTML = "";
+
+    teams.forEach((team, index) => {
+
+        body.innerHTML += `
+
+        <tr>
+
+            <td>${index + 1}</td>
+
+            <td>${team.name}</td>
+
+            <td>${team.played}</td>
+
+            <td>${team.wins}</td>
+
+            <td>${team.draws}</td>
+
+            <td>${team.losses}</td>
+
+            <td>${team.gf}</td>
+
+            <td>${team.ga}</td>
+
+            <td>${team.gd}</td>
+
+            <td>${team.points}</td>
+
+        </tr>
+
+        `;
+
+    });
 
 }
