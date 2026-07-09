@@ -1,64 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Tournament Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
 <div class="container">
 
-    <h1>🏆 Football Tournament Manager</h1>
+<h1>🏆 Football Tournament Manager</h1>
 
-    <nav class="tabs">
-        <button onclick="showTab('teams')">👥 Teams</button>
-        <button onclick="showTab('fixtures')">📅 Fixtures</button>
-        <button onclick="showTab('standings')">📊 Standings</button>
-        <button onclick="showTab('discipline')">🟨 Discipline</button>
-    </nav>
+<nav class="tabs">
+    <button onclick="showTab('teams')">👥 Teams</button>
+    <button onclick="showTab('fixtures')">📅 Fixtures</button>
+    <button onclick="showTab('standings')">📊 Standings</button>
+    <button onclick="showTab('discipline')">🟨 Discipline</button>
+</nav>
 
-    <section id="teams" class="tab">
-        <h2>Teams</h2>
+<section id="teams" class="tab">
 
-        <input id="teamName" placeholder="Enter team name">
-        <button onclick="addTeam()">Add Team</button>
+<h2>Teams</h2>
 
-        <div id="teamList"></div>
-    </section>
+<input id="teamName" placeholder="Enter Team Name">
 
-    <section id="fixtures" class="tab" style="display:none;">
-        <h2>Fixtures</h2>
+<button onclick="addTeam()">Add Team</button>
 
-        <button onclick="generateFixtures()">
-            Generate League Fixtures
-        </button>
+<div id="teamList"></div>
 
-        <div id="fixtureList"></div>
-    </section>
+</section>
 
-    <section id="standings" class="tab" style="display:none;">
-        <h2>Standings</h2>
+<section id="fixtures" class="tab" style="display:none;">
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Pos</th>
-                    <th>Team</th>
-                    <th>P</th>
-                    <th>W</th>
-                    <th>D</th>
-                    <th>L</th>
-                    <th>GF</th>
-                    <th>GA</th>
-                    <th>GD</th>
-                    <th>Pts</th>
-                </tr>
-            </thead>
+<h2>Fixtures</h2>
 
-            <tbody id="tableBody"></tbody>
-        </table>
+<button onclick="generateFixtures()">
+Generate Fixtures
+</button>
 
-    </section>
+<div id="fixtureList"></div>
 
-    <section id="discipline" class="tab" style="display:none;">
-        <h2>Discipline</h2>
+</section>
 
-        <div id="disciplineTable"></div>
+<section id="standings" class="tab" style="display:none;">
 
-    </section>
+<h2>Standings</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Pos</th>
+<th>Team</th>
+<th>P</th>
+<th>W</th>
+<th>D</th>
+<th>L</th>
+<th>GF</th>
+<th>GA</th>
+<th>GD</th>
+<th>Pts</th>
+</tr>
+
+</thead>
+
+<tbody id="tableBody">
+
+</tbody>
+
+</table>
+
+</section>
+
+<section id="discipline" class="tab" style="display:none;">
+
+<h2>Discipline</h2>
+
+<div id="disciplineTable">
+
+No discipline records yet.
+
+</div>
+
+</section>
 
 </div>
 
 <script src="script.js"></script>
+
+</body>
+</html>
