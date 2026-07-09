@@ -172,3 +172,70 @@ function generateFixtures() {
     });
 
 }
+function saveResult(index){
+
+    const homeGoals = parseInt(document.getElementById("hg"+index).value);
+    const awayGoals = parseInt(document.getElementById("ag"+index).value);
+
+    if(isNaN(homeGoals) || isNaN(awayGoals)){
+        alert("Enter both scores.");
+        return;
+    }
+
+    let match = fixtures[index];
+
+    if(match.played){
+        alert("Result already saved.");
+        return;
+    }
+
+    match.played = true;
+
+    let home = teams.find(t => t.name === match.home);
+    let away = teams.find(t => t.name === match.away);
+
+    home.played++;
+    away.played++;
+
+    home.gf += homeGoals;
+    home.ga += awayGoals;
+
+    away.gf += awayGoals;
+    away.ga += homeGoals;
+
+    home.gd = home.gf - home.ga;
+    away.gd = away.gf - away.ga;
+
+    if(homeGoals > awayGoals){
+
+        home.wins++;
+        away.losses++;
+
+        home.points += 3;
+
+    }
+
+    else if(homeGoals < awayGoals){
+
+        away.wins++;
+        home.losses++;
+
+        away.points += 3;
+
+    }
+
+    else{
+
+        home.draws++;
+        away.draws++;
+
+        home.points++;
+        away.points++;
+
+    }
+
+    updateTable();
+
+    alert("Result Saved!");
+
+}
