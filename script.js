@@ -35,20 +35,20 @@ function saveData() {
 // ---------- Navigation ----------
 function showPage(page) {
 
-    document.querySelectorAll(".page").forEach(p => {
-
-        p.style.display = "none";
-
+    // Hide every page
+    document.querySelectorAll(".page").forEach(section => {
+        section.style.display = "none";
     });
 
+    // Show selected page
     document.getElementById(page).style.display = "block";
 
+    // Update active button
     document.querySelectorAll(".nav-btn").forEach(btn => {
-
         btn.classList.remove("active");
-
     });
 
+    event.target.classList.add("active");
 }
 
 // ---------- Add Team ----------
