@@ -1,10 +1,211 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Football Tournament</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Football Tournament</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#0f172a;
+color:white;
+margin:0;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+}
+
+input,button{
+padding:10px;
+border:none;
+border-radius:8px;
+margin:5px;
+}
+
+input{
+width:250px;
+}
+
+button{
+background:#22c55e;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#16a34a;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th,td{
+padding:10px;
+text-align:center;
+border-bottom:1px solid #334155;
+}
+
+th{
+background:#334155;
+}
+
+.teamRow:hover{
+background:#273549;
+}
+</style>
+
 </head>
+
 <body>
-    <h1>⚽ Football Tournament</h1>
-    <p>Website is working!</p>
+
+<div class="container">
+
+<h1>⚽ Football Tournament Manager</h1>
+
+<div class="card">
+
+<h2>Add Team</h2>
+
+<input id="teamName" placeholder="Enter Team Name">
+
+<button onclick="addTeam()">Add Team</button>
+
+</div>
+
+<div class="card">
+
+<h2>Standings</h2>
+
+<table id="table">
+
+<thead>
+
+<tr>
+
+<th>#</th>
+<th>Team</th>
+<th>P</th>
+<th>W</th>
+<th>D</th>
+<th>L</th>
+<th>GF</th>
+<th>GA</th>
+<th>GD</th>
+<th>Pts</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let teams=[];
+
+function addTeam(){
+
+let name=document.getElementById("teamName").value.trim();
+
+if(name=="") return;
+
+teams.push({
+name,
+played:0,
+win:0,
+draw:0,
+loss:0,
+gf:0,
+ga:0,
+gd:0,
+points:0
+});
+
+document.getElementById("teamName").value="";
+
+renderTable();
+
+}
+
+function renderTable(){
+
+teams.sort((a,b)=>{
+
+if(b.points!=a.points)return b.points-a.points;
+
+if(b.gd!=a.gd)return b.gd-a.gd;
+
+if(b.gf!=a.gf)return b.gf-a.gf;
+
+return a.name.localeCompare(b.name);
+
+});
+
+let tbody=document.querySelector("tbody");
+
+tbody.innerHTML="";
+
+teams.forEach((t,i)=>{
+
+tbody.innerHTML+=`
+
+<tr class="teamRow">
+
+<td>${i+1}</td>
+
+<td>${t.name}</td>
+
+<td>${t.played}</td>
+
+<td>${t.win}</td>
+
+<td>${t.draw}</td>
+
+<td>${t.loss}</td>
+
+<td>${t.gf}</td>
+
+<td>${t.ga}</td>
+
+<td>${t.gd}</td>
+
+<td><b>${t.points}</b></td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+</script>
+
 </body>
 </html>
