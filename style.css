@@ -86,3 +86,13 @@ width:100%;
 }
 
 }
+.tabs{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.tab{
+margin-top:20px;
+}
