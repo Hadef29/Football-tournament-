@@ -1,85 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Football Tournament Manager</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Tournament Manager</title>
 
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<header>
+<header class="header">
 
-<h1>🏆 Football Tournament Manager</h1>
+    <h1>🏆 Football Tournament Manager</h1>
 
-<p>Create • Play • Track Standings</p>
+    <p>Create • Play • Track • Champion</p>
 
 </header>
 
-<nav>
+<nav class="navbar">
 
-<button onclick="showPage('teams')">👥 Teams</button>
+    <button class="nav-btn active" onclick="showPage('dashboard')">
+        <i class="fa-solid fa-house"></i>
+        Dashboard
+    </button>
 
-<button onclick="showPage('fixtures')">📅 Fixtures</button>
+    <button class="nav-btn" onclick="showPage('teams')">
+        <i class="fa-solid fa-users"></i>
+        Teams
+    </button>
 
-<button onclick="showPage('standings')">📊 Standings</button>
+    <button class="nav-btn" onclick="showPage('fixtures')">
+        <i class="fa-solid fa-futbol"></i>
+        Fixtures
+    </button>
 
-<button onclick="showPage('discipline')">🟨 Discipline</button>
+    <button class="nav-btn" onclick="showPage('standings')">
+        <i class="fa-solid fa-ranking-star"></i>
+        Standings
+    </button>
+
+    <button class="nav-btn" onclick="showPage('discipline')">
+        <i class="fa-solid fa-id-card"></i>
+        Discipline
+    </button>
 
 </nav>
 
 <main>
 
-<section id="teams" class="page">
+<!-- DASHBOARD -->
+
+<section id="dashboard" class="page">
+
+<div class="card">
+
+<h2>League Dashboard</h2>
+
+<div class="stats">
+
+<div class="stat">
+<h3 id="teamCount">0</h3>
+<p>Teams</p>
+</div>
+
+<div class="stat">
+<h3 id="matchCount">0</h3>
+<p>Matches</p>
+</div>
+
+<div class="stat">
+<h3 id="playedCount">0</h3>
+<p>Played</p>
+</div>
+
+<div class="stat">
+<h3 id="remainingCount">0</h3>
+<p>Remaining</p>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- TEAMS -->
+
+<section id="teams" class="page" style="display:none;">
 
 <div class="card">
 
 <h2>Add Team</h2>
 
+<div class="team-controls">
+
 <input
+type="text"
 id="teamName"
-placeholder="Team Name">
+placeholder="Enter Team Name">
 
 <button onclick="addTeam()">
+<i class="fa-solid fa-plus"></i>
 Add Team
 </button>
 
-<div id="teamList"></div>
+<button onclick="generateFixtures()">
+<i class="fa-solid fa-calendar-days"></i>
+Generate Fixtures
+</button>
+
+</div>
+
+<div id="teamList">
+
+</div>
 
 </div>
 
 </section>
 
-<section
-id="fixtures"
-class="page"
-style="display:none;">
+<!-- FIXTURES -->
+
+<section id="fixtures" class="page" style="display:none;">
 
 <div class="card">
 
-<h2>League Fixtures</h2>
+<h2>Fixtures</h2>
 
-<button onclick="generateFixtures()">
+<div id="fixtureList">
 
-Generate Fixtures
+<p>No fixtures generated.</p>
 
-</button>
-
-<div id="fixtureList"></div>
+</div>
 
 </div>
 
 </section>
 
-<section
-id="standings"
-class="page"
-style="display:none;">
+<!-- STANDINGS -->
+
+<section id="standings" class="page" style="display:none;">
 
 <div class="card">
 
@@ -91,7 +156,7 @@ style="display:none;">
 
 <tr>
 
-<th>Pos</th>
+<th>#</th>
 <th>Team</th>
 <th>P</th>
 <th>W</th>
@@ -116,10 +181,9 @@ style="display:none;">
 
 </section>
 
-<section
-id="discipline"
-class="page"
-style="display:none;">
+<!-- DISCIPLINE -->
+
+<section id="discipline" class="page" style="display:none;">
 
 <div class="card">
 
@@ -150,6 +214,12 @@ style="display:none;">
 </section>
 
 </main>
+
+<footer>
+
+Football Tournament Manager © 2026
+
+</footer>
 
 <script src="script.js"></script>
 
