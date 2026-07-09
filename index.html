@@ -1,227 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Tournament Manager</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FootBall League — Fixtures &amp; Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+<div class="wrap">
 
-<header class="header">
+  <header class="board">
+    <div class="league-name-row">
+      <span class="flag">⚑</span>
+      <input type="text" id="leagueName" value="FootBall League" maxlength="60" spellcheck="false">
+    </div>
+    <p class="tag">Add your teams, generate fixtures, enter results — the table sorts itself.</p>
+    <div class="stat-chips">
+      <div class="chip">Teams: <b id="chipTeams">0</b></div>
+      <div class="chip">Played: <b id="chipPlayed">0</b></div>
+      <div class="chip">Total matches: <b id="chipTotal">0</b></div>
+    </div>
+  </header>
 
-    <h1>🏆 Football Tournament Manager</h1>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="teams">1 · Teams <span class="num" id="navTeamCount">0</span></button>
+    <button class="tab-btn" data-tab="fixtures" id="navFixturesBtn" disabled>2 · Fixtures</button>
+    <button class="tab-btn" data-tab="table" id="navTableBtn" disabled>3 · Table</button>
+  </nav>
 
-    <p>Create • Play • Track • Champion</p>
+  <!-- TEAMS TAB -->
+  <section class="tabpanel active" id="tab-teams">
+    <div class="panel">
+      <h2>Teams</h2>
+      <div class="team-input-row">
+        <input type="text" id="teamInput" placeholder="Type a team name and press Add…" maxlength="40">
+        <button class="primary" id="addTeamBtn">Add</button>
+      </div>
+      <div class="team-list" id="teamList"></div>
+      <div class="empty-note" id="teamEmptyNote">No teams yet — add at least two to generate fixtures.</div>
 
-</header>
+      <div class="actions-row">
+        <label class="toggle-row">
+          <input type="checkbox" id="doubleRoundToggle">
+          Home &amp; away (everyone plays everyone twice)
+        </label>
+      </div>
+      <div class="actions-row">
+        <button class="primary" id="generateBtn" disabled>Generate fixtures</button>
+        <button class="ghost danger" id="resetBtn">Reset everything</button>
+        <label class="chip" style="cursor:pointer;">
+          Import <input type="file" id="importFile" accept="application/json" style="display:none;">
+        </label>
+        <button class="ghost" id="exportBtn">Export JSON</button>
+      </div>
+    </div>
+  </section>
 
-<nav class="navbar">
+  <!-- FIXTURES TAB -->
+  <section class="tabpanel" id="tab-fixtures">
+    <div class="panel">
+      <h2>Fixtures</h2>
+      <div id="fixturesContainer"></div>
+    </div>
+  </section>
 
-    <button class="nav-btn active" onclick="showPage('dashboard')">
-        <i class="fa-solid fa-house"></i>
-        Dashboard
-    </button>
-
-    <button class="nav-btn" onclick="showPage('teams')">
-        <i class="fa-solid fa-users"></i>
-        Teams
-    </button>
-
-    <button class="nav-btn" onclick="showPage('fixtures')">
-        <i class="fa-solid fa-futbol"></i>
-        Fixtures
-    </button>
-
-    <button class="nav-btn" onclick="showPage('standings')">
-        <i class="fa-solid fa-ranking-star"></i>
-        Standings
-    </button>
-
-    <button class="nav-btn" onclick="showPage('discipline')">
-        <i class="fa-solid fa-id-card"></i>
-        Discipline
-    </button>
-
-</nav>
-
-<main>
-
-<!-- DASHBOARD -->
-
-<section id="dashboard" class="page">
-
-<div class="card">
-
-<h2>League Dashboard</h2>
-
-<div class="stats">
-
-<div class="stat">
-<h3 id="teamCount">0</h3>
-<p>Teams</p>
-</div>
-
-<div class="stat">
-<h3 id="matchCount">0</h3>
-<p>Matches</p>
-</div>
-
-<div class="stat">
-<h3 id="playedCount">0</h3>
-<p>Played</p>
-</div>
-
-<div class="stat">
-<h3 id="remainingCount">0</h3>
-<p>Remaining</p>
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- TEAMS -->
-
-<section id="teams" class="page" style="display:none;">
-
-<div class="card">
-
-<h2>Add Team</h2>
-
-<div class="team-controls">
-
-<input
-type="text"
-id="teamName"
-placeholder="Enter Team Name">
-
-<button onclick="addTeam()">
-<i class="fa-solid fa-plus"></i>
-Add Team
-</button>
-
-<button onclick="generateFixtures()">
-<i class="fa-solid fa-calendar-days"></i>
-Generate Fixtures
-</button>
+  <!-- TABLE TAB -->
+  <section class="tabpanel" id="tab-table">
+    <div class="panel">
+      <h2>League table</h2>
+      <div class="table-scroll">
+        <table class="standings">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th class="team-col">Team</th>
+              <th>P</th><th>W</th><th>D</th><th>L</th>
+              <th>GF</th><th>GA</th><th>GD</th>
+              <th>Pts</th>
+              <th>Cards</th>
+            </tr>
+          </thead>
+          <tbody id="standingsBody"></tbody>
+        </table>
+      </div>
+      <details class="legend" style="margin-top:16px;">
+        <summary>How ties are broken</summary>
+        <ol>
+          <li><b>Points</b> — win 3, draw 1, loss 0.</li>
+          <li><b>Goal difference</b> — goals for minus goals against, highest first.</li>
+          <li><b>Goals scored</b> — most goals for, highest first.</li>
+          <li><b>Head-to-head</b> — a mini-table using only the matches played between the tied teams.</li>
+          <li><b>Discipline</b> — fewest red cards first (red is the serious one), then fewest yellow cards.</li>
+        </ol>
+      </details>
+    </div>
+  </section>
 
 </div>
-
-<div id="teamList">
-
-</div>
-
-</div>
-
-</section>
-
-<!-- FIXTURES -->
-
-<section id="fixtures" class="page" style="display:none;">
-
-<div class="card">
-
-<h2>Fixtures</h2>
-
-<div id="fixtureList">
-
-<p>No fixtures generated.</p>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- STANDINGS -->
-
-<section id="standings" class="page" style="display:none;">
-
-<div class="card">
-
-<h2>League Table</h2>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>#</th>
-<th>Team</th>
-<th>P</th>
-<th>W</th>
-<th>D</th>
-<th>L</th>
-<th>GF</th>
-<th>GA</th>
-<th>GD</th>
-<th>Pts</th>
-
-</tr>
-
-</thead>
-
-<tbody id="tableBody">
-
-</tbody>
-
-</table>
-
-</div>
-
-</section>
-
-<!-- DISCIPLINE -->
-
-<section id="discipline" class="page" style="display:none;">
-
-<div class="card">
-
-<h2>Discipline</h2>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Team</th>
-<th>Yellow</th>
-<th>Red</th>
-
-</tr>
-
-</thead>
-
-<tbody id="disciplineBody">
-
-</tbody>
-
-</table>
-
-</div>
-
-</section>
-
-</main>
-
-<footer>
-
-Football Tournament Manager © 2026
-
-</footer>
 
 <script src="script.js"></script>
-
 </body>
 </html>
