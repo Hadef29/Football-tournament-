@@ -1,58 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Tournament Manager</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Tournament Manager</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
 
-<div class="container">
+<header>
 
 <h1>🏆 Football Tournament Manager</h1>
 
-<nav class="tabs">
-    <button onclick="showTab('teams')">👥 Teams</button>
-    <button onclick="showTab('fixtures')">📅 Fixtures</button>
-    <button onclick="showTab('standings')">📊 Standings</button>
-    <button onclick="showTab('discipline')">🟨 Discipline</button>
+<p>Create • Play • Track Standings</p>
+
+</header>
+
+<nav>
+
+<button onclick="showPage('teams')">👥 Teams</button>
+
+<button onclick="showPage('fixtures')">📅 Fixtures</button>
+
+<button onclick="showPage('standings')">📊 Standings</button>
+
+<button onclick="showPage('discipline')">🟨 Discipline</button>
+
 </nav>
 
-<section id="teams" class="tab">
+<main>
 
-<h2>Teams</h2>
+<section id="teams" class="page">
 
-<input id="teamName" placeholder="Enter Team Name">
+<div class="card">
 
-<button onclick="addTeam()">Add Team</button>
+<h2>Add Team</h2>
+
+<input
+id="teamName"
+placeholder="Team Name">
+
+<button onclick="addTeam()">
+Add Team
+</button>
 
 <div id="teamList"></div>
 
+</div>
+
 </section>
 
-<section id="fixtures" class="tab" style="display:none;">
+<section
+id="fixtures"
+class="page"
+style="display:none;">
 
-<h2>Fixtures</h2>
+<div class="card">
+
+<h2>League Fixtures</h2>
 
 <button onclick="generateFixtures()">
+
 Generate Fixtures
+
 </button>
 
 <div id="fixtureList"></div>
 
+</div>
+
 </section>
 
-<section id="standings" class="tab" style="display:none;">
+<section
+id="standings"
+class="page"
+style="display:none;">
 
-<h2>Standings</h2>
+<div class="card">
+
+<h2>League Table</h2>
 
 <table>
 
 <thead>
 
 <tr>
+
 <th>Pos</th>
 <th>Team</th>
 <th>P</th>
@@ -63,6 +101,7 @@ Generate Fixtures
 <th>GA</th>
 <th>GD</th>
 <th>Pts</th>
+
 </tr>
 
 </thead>
@@ -73,21 +112,44 @@ Generate Fixtures
 
 </table>
 
+</div>
+
 </section>
 
-<section id="discipline" class="tab" style="display:none;">
+<section
+id="discipline"
+class="page"
+style="display:none;">
+
+<div class="card">
 
 <h2>Discipline</h2>
 
-<div id="disciplineTable">
+<table>
 
-No discipline records yet.
+<thead>
+
+<tr>
+
+<th>Team</th>
+<th>Yellow</th>
+<th>Red</th>
+
+</tr>
+
+</thead>
+
+<tbody id="disciplineBody">
+
+</tbody>
+
+</table>
 
 </div>
 
 </section>
 
-</div>
+</main>
 
 <script src="script.js"></script>
 
