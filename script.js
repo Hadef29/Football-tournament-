@@ -104,3 +104,71 @@ body.innerHTML+=`
 });
 
 }
+// ---------- GENERATE FIXTURES ----------
+function generateFixtures() {
+
+    if (teams.length < 2) {
+        alert("Add at least 2 teams.");
+        return;
+    }
+
+    fixtures = [];
+
+    let fixtureList = document.getElementById("fixtureList");
+    fixtureList.innerHTML = "";
+
+    for (let i = 0; i < teams.length; i++) {
+
+        for (let j = i + 1; j < teams.length; j++) {
+
+            fixtures.push({
+                home: teams[i].name,
+                away: teams[j].name,
+                homeGoals: "",
+                awayGoals: "",
+                played: false
+            });
+
+        }
+
+    }
+
+    fixtures.forEach((match, index) => {
+
+        fixtureList.innerHTML += `
+        <div class="card">
+
+            <h3>Match ${index + 1}</h3>
+
+            <b>${match.home}</b>
+
+            <input
+                type="number"
+                min="0"
+                id="hg${index}"
+                placeholder="Goals"
+                style="width:70px;">
+
+            -
+
+            <input
+                type="number"
+                min="0"
+                id="ag${index}"
+                placeholder="Goals"
+                style="width:70px;">
+
+            <b>${match.away}</b>
+
+            <br><br>
+
+            <button onclick="saveResult(${index})">
+                Save Result
+            </button>
+
+        </div>
+        `;
+
+    });
+
+}
