@@ -161,6 +161,7 @@ body{
   color: var(--muted);
 }
 .chip b{ color: var(--lime); font-weight:700; margin-left:4px; }
+.chip.save-chip{ color: var(--lime-dim); border-color: var(--line-soft); }
 
 .view{ display:none; }
 .view.active{ display:block; }
@@ -373,14 +374,34 @@ details.legend[open] summary::before{ content:"▾ "; }
 
 .empty-state{ text-align:center; color: var(--muted-2); padding: 30px 10px; font-size:14px; }
 
-/* ---------- Sticky standings columns (helps horizontal scroll on narrow screens) ---------- */
-table.standings td:nth-child(1), table.standings th:nth-child(1){
-  position: sticky; left: 0; z-index:2; background: var(--panel);
+/* ---------- Mobile standings card list (hidden on desktop) ---------- */
+.standings-mobile{ display:none; }
+.mobile-standing-row{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background: var(--bg-alt);
+  padding:12px 14px;
+  margin-bottom:8px;
 }
-table.standings td:nth-child(2), table.standings th:nth-child(2){
-  position: sticky; left: 34px; z-index:2; background: var(--panel);
-  box-shadow: 4px 0 6px -4px rgba(0,0,0,0.5);
+.mobile-standing-row.top3{ border-color: var(--lime-dim); }
+.msr-top{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.msr-top .pos-badge{ flex-shrink:0; }
+.mobile-standing-row.top3 .pos-badge{ background: var(--lime); color:#0a1310; border-color:var(--lime); }
+.msr-name{ flex:1; font-weight:700; font-size:15px; }
+.msr-pts{ font-family:'JetBrains Mono', monospace; font-weight:700; color: var(--lime); font-size:15px; }
+.msr-pts small{ font-weight:500; color: var(--muted); font-size:10px; }
+.msr-stats{
+  display:flex; flex-wrap:wrap; gap:10px 14px;
+  font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--muted);
+  padding-top:10px; border-top:1px dashed var(--line-soft);
 }
+.msr-stats b{ color: var(--text); font-weight:700; }
+.msr-stats b.pos-val{ color: var(--lime-dim); }
+.msr-stats b.neg-val{ color: var(--red); }
+.msr-cards{ display:flex; align-items:center; gap:4px; }
+.msr-cards .box{ width:8px; height:11px; border-radius:1px; display:inline-block; }
+.msr-cards .box.y{ background: var(--yellow); margin-left:6px; }
+.msr-cards .box.r{ background: var(--red); margin-left:6px; }
 
 /* ============ RESPONSIVE — tablet & below ============ */
 @media (max-width: 860px){
@@ -400,14 +421,17 @@ table.standings td:nth-child(2), table.standings th:nth-child(2){
 
 /* ============ RESPONSIVE — phones ============ */
 @media (max-width: 600px){
-  /* Prevent iOS auto-zoom on focus by keeping inputs at 16px, and make every
-     tappable control a comfortable size. */
-  input[type=text], input[type=number], button, .side-btn, .nav-item{
+  /* Prevent iOS auto-zoom on focus and keep every tappable control a
+     comfortable size. */
+  button, .nav-item, .side-btn{
+    min-height:44px;
+    font-size:15px;
+  }
+  input[type=text]#teamInput,
+  input[type=text]#leagueName{
     font-size:16px;
   }
-  button, .nav-item, .side-btn, .stepper button{
-    min-height:44px;
-  }
+
   .team-input-row{ flex-direction:column; }
   .team-input-row button{ width:100%; }
   .actions-row .primary.big{ width:100%; }
@@ -419,10 +443,12 @@ table.standings td:nth-child(2), table.standings th:nth-child(2){
 
   /* ----- Match ticket: stack into a proper two-row card instead of a
      squeezed 5-column row. Order in the DOM is:
-     1 home-name, 2 home-score, 3 vs, 4 away-score, 5 away-name ----- */
+     1 home-name, 2 home-score, 3 vs, 4 away-score, 5 away-name -----
+     input.score-input.type-number needs this exact selector to beat the
+     base "input[type=number]{ width:52px }" rule's specificity. */
   .match-main{
     display:grid;
-    grid-template-columns: 1fr 52px;
+    grid-template-columns: 1fr 60px;
     grid-template-rows: auto auto auto;
     grid-template-areas:
       "home homescore"
@@ -443,20 +469,19 @@ table.standings td:nth-child(2), table.standings th:nth-child(2){
     font-size:10px; letter-spacing:1px;
   }
   .vs::before, .vs::after{ content:""; flex:1; height:1px; background: var(--line-soft); }
-  .score-input{ width:100%; min-height:44px; font-size:16px; }
+  input[type=number].score-input{
+    width:100%; min-height:44px; font-size:16px; padding:8px 4px;
+  }
 
   .match-ticket{ padding:14px; }
 
   /* ----- Cards panel: stack home/away instead of squeezing two columns ----- */
   .cards-panel{ grid-template-columns: 1fr; gap:14px; }
   .cards-panel.open{ display:grid; }
-  .stepper button{ min-width:44px; }
+  .stepper button{ min-width:44px; min-height:40px; }
   .stepper .count{ width:34px; }
 
-  /* ----- Standings: smaller type, sticky columns already applied above ----- */
-  table.standings{ font-size:12px; min-width: 560px; }
-  .pos-badge{ width:18px; height:18px; }
-
-  /* ----- Leader / dashboard cards ----- */
-  .leader-stats{ flex-wrap:wrap; row-gap:6px; }
+  /* ----- Standings: swap the wide table for the stacked card list ----- */
+  .desktop-table{ display:none; }
+  .standings-mobile{ display:block; }
 }
