@@ -13,6 +13,7 @@
   const resetBtn = el('resetBtn');
   const fixturesContainer = el('fixturesContainer');
   const standingsBody = el('standingsBody');
+  const standingsMobile = el('standingsMobile');
   const chipTeams = el('chipTeams');
   const chipPlayed = el('chipPlayed');
   const chipTotal = el('chipTotal');
@@ -39,7 +40,51 @@
     const name = leagueNameInput.value.trim() || 'FootBall League';
     document.title = name;
     mobileTitle.textContent = name;
+    saveState();
   });
+
+  // ---------------- Persistence (this device / this browser only) ----------------
+  const STORAGE_KEY = 'footballLeagueData_v1';
+
+  function saveState(){
+    try{
+      const data = {
+        leagueName: leagueNameInput.value,
+        teams, matches,
+        doubleRound: doubleRoundToggle.checked
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){
+      // storage unavailable (private browsing, quota, etc.) — fail silently,
+      // the app still works, it just won't survive a refresh.
+    }
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      const data = JSON.parse(raw);
+      if(!Array.isArray(data.teams)) return false;
+      teams = data.teams;
+      matches = Array.isArray(data.matches) ? data.matches : [];
+      if(typeof data.leagueName === 'string' && data.leagueName.trim()){
+        leagueNameInput.value = data.leagueName;
+        document.title = data.leagueName;
+        mobileTitle.textContent = data.leagueName;
+      }
+      doubleRoundToggle.checked = !!data.doubleRound;
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function clearSavedState(){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  }
+
+  doubleRoundToggle.addEventListener('change', saveState);
 
   // ---------------- Navigation ----------------
   function switchView(view){
@@ -75,6 +120,7 @@
     teamInput.focus();
     renderTeams();
     computeStandings();
+    saveState();
   }
 
   function removeTeam(name){
@@ -85,6 +131,7 @@
     if(activeView === 'fixtures' || activeView === 'table') switchView('teams');
     renderTeams();
     computeStandings();
+    saveState();
   }
 
   function renderTeams(){
@@ -159,6 +206,7 @@
     navFixturesBtn.disabled = false;
     navTableBtn.disabled = false;
     switchView('fixtures');
+    saveState();
   }
 
   generateBtn.addEventListener('click', generateFixtures);
@@ -172,6 +220,7 @@
     navTableBtn.disabled = true;
     computeStandings();
     switchView('dashboard');
+    clearSavedState();
   });
 
   // ---------------- Fixtures rendering ----------------
@@ -268,6 +317,7 @@
     const ticket = e.target.closest('.match-ticket');
     if(m.hg !== null && m.ag !== null) ticket.classList.add('played');
     else ticket.classList.remove('played');
+    saveState();
   }
 
   function onStepperClick(e){
@@ -292,6 +342,7 @@
       badgeEl.remove();
     }
     computeStandings();
+    saveState();
   }
 
   // ---------------- Standings computation ----------------
@@ -320,6 +371,7 @@
 
     const ranked = tieBreakSort(Object.values(stats), playedMatches, 0);
     renderStandings(ranked);
+    renderStandingsMobile(ranked);
     renderDashboard(ranked, playedMatches);
 
     chipPlayed.textContent = playedMatches.length;
@@ -402,6 +454,41 @@
         </td>
       `;
       standingsBody.appendChild(tr);
+    });
+  }
+
+  function renderStandingsMobile(ranked){
+    standingsMobile.innerHTML = '';
+    if(ranked.length === 0){
+      standingsMobile.innerHTML = `<div class="empty-state">No teams yet.</div>`;
+      return;
+    }
+    ranked.forEach((s, idx)=>{
+      const gdText = s.gd > 0 ? '+' + s.gd : s.gd;
+      const gdClass = s.gd > 0 ? 'pos-val' : (s.gd < 0 ? 'neg-val' : '');
+      const row = document.createElement('div');
+      row.className = 'mobile-standing-row' + (idx < 3 ? ' top3' : '');
+      row.innerHTML = `
+        <div class="msr-top">
+          <span class="pos-badge">${idx+1}</span>
+          <span class="msr-name">${escapeHtml(s.name)}</span>
+          <span class="msr-pts">${s.pts} <small>pts</small></span>
+        </div>
+        <div class="msr-stats">
+          <span>P <b>${s.played}</b></span>
+          <span>W <b>${s.won}</b></span>
+          <span>D <b>${s.drawn}</b></span>
+          <span>L <b>${s.lost}</b></span>
+          <span>GF <b>${s.gf}</b></span>
+          <span>GA <b>${s.ga}</b></span>
+          <span>GD <b class="${gdClass}">${gdText}</b></span>
+          <span class="msr-cards">
+            <span class="box y"></span>${s.yellow}
+            <span class="box r"></span>${s.red}
+          </span>
+        </div>
+      `;
+      standingsMobile.appendChild(row);
     });
   }
 
@@ -491,6 +578,7 @@
         if(matches.length) renderFixtures();
         computeStandings();
         switchView(matches.length ? 'table' : 'teams');
+        saveState();
       }catch(err){
         alert('Could not read that file — it does not look like a valid league export.');
       }
@@ -500,6 +588,15 @@
   });
 
   // ---------------- Init ----------------
+  const restored = loadState();
   renderTeams();
+  if(matches.length){
+    renderFixtures();
+    navFixturesBtn.disabled = false;
+    navTableBtn.disabled = false;
+  }
   computeStandings();
+  if(restored && teams.length){
+    switchView('dashboard');
+  }
 })();
