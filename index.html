@@ -74,6 +74,7 @@
         <div class="chip">Teams <b id="chipTeams">0</b></div>
         <div class="chip">Played <b id="chipPlayed">0</b></div>
         <div class="chip">Matches <b id="chipTotal">0</b></div>
+        <div class="chip save-chip">💾 Saved on this device</div>
       </div>
     </header>
 
@@ -151,7 +152,7 @@
         <p>Updates automatically as results come in.</p>
       </div>
       <div class="card">
-        <div class="table-scroll">
+        <div class="table-scroll desktop-table">
           <table class="standings">
             <thead>
               <tr>
@@ -166,6 +167,7 @@
             <tbody id="standingsBody"></tbody>
           </table>
         </div>
+        <div class="standings-mobile" id="standingsMobile"></div>
         <details class="legend">
           <summary>How ties are broken</summary>
           <ol>
