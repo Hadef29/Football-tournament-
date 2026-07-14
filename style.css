@@ -52,14 +52,11 @@ body{
   margin-bottom:16px;
 }
 .brand-logo{ height:34px; width:auto; flex-shrink:0; filter: drop-shadow(0 0 6px rgba(58,169,224,0.25)); }
-#leagueName{
-  background:transparent; border:none;
+.brand-title{
   color: var(--text); font-family:'Space Grotesk', sans-serif;
   font-size: 16px; font-weight:700;
-  padding:2px 0; width:100%;
-  border-bottom:1px dashed transparent;
+  line-height:1.25;
 }
-#leagueName:hover, #leagueName:focus{ border-bottom-color: var(--lime-dim); outline:none; }
 
 .side-nav{ display:flex; flex-direction:column; gap:2px; flex:1; }
 .nav-item{
@@ -428,8 +425,7 @@ details.legend[open] summary::before{ content:"▾ "; }
     min-height:44px;
     font-size:15px;
   }
-  input[type=text]#teamInput,
-  input[type=text]#leagueName{
+  input[type=text]#teamInput{
     font-size:16px;
   }
 
