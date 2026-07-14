@@ -19,7 +19,6 @@
   const chipTotal = el('chipTotal');
   const exportBtn = el('exportBtn');
   const importFile = el('importFile');
-  const leagueNameInput = el('leagueName');
   const mobileTitle = el('mobileTitle');
   const doubleRoundToggle = el('doubleRoundToggle');
   const navFixturesBtn = el('navFixturesBtn');
@@ -36,12 +35,8 @@
   const scrim = el('scrim');
   const hamburgerBtn = el('hamburgerBtn');
 
-  leagueNameInput.addEventListener('input', ()=>{
-    const name = leagueNameInput.value.trim() || 'Storm Football League';
-    document.title = name;
-    mobileTitle.textContent = name;
-    saveState();
-  });
+  // The league name is fixed and cannot be edited from the page.
+  const LEAGUE_NAME = 'Storm Football League';
 
   // ---------------- Persistence (this device / this browser only) ----------------
   const STORAGE_KEY = 'footballLeagueData_v1';
@@ -49,7 +44,6 @@
   function saveState(){
     try{
       const data = {
-        leagueName: leagueNameInput.value,
         teams, matches,
         doubleRound: doubleRoundToggle.checked
       };
@@ -68,11 +62,6 @@
       if(!Array.isArray(data.teams)) return false;
       teams = data.teams;
       matches = Array.isArray(data.matches) ? data.matches : [];
-      if(typeof data.leagueName === 'string' && data.leagueName.trim()){
-        leagueNameInput.value = data.leagueName;
-        document.title = data.leagueName;
-        mobileTitle.textContent = data.leagueName;
-      }
       doubleRoundToggle.checked = !!data.doubleRound;
       return true;
     }catch(e){
@@ -546,12 +535,12 @@
 
   // ---------------- Export / Import ----------------
   exportBtn.addEventListener('click', ()=>{
-    const data = { leagueName: leagueNameInput.value, teams, matches, doubleRound: doubleRoundToggle.checked };
+    const data = { leagueName: LEAGUE_NAME, teams, matches, doubleRound: doubleRoundToggle.checked };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = (leagueNameInput.value.trim() || 'league') + '-data.json';
+    a.download = 'storm-football-league-data.json';
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -566,11 +555,6 @@
         if(!Array.isArray(data.teams) || !Array.isArray(data.matches)) throw new Error('bad format');
         teams = data.teams;
         matches = data.matches;
-        if(typeof data.leagueName === 'string' && data.leagueName.trim()){
-          leagueNameInput.value = data.leagueName;
-          document.title = data.leagueName;
-          mobileTitle.textContent = data.leagueName;
-        }
         doubleRoundToggle.checked = !!data.doubleRound;
         renderTeams();
         navFixturesBtn.disabled = matches.length === 0;
