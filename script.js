@@ -37,7 +37,7 @@
   const hamburgerBtn = el('hamburgerBtn');
 
   leagueNameInput.addEventListener('input', ()=>{
-    const name = leagueNameInput.value.trim() || 'FootBall League';
+    const name = leagueNameInput.value.trim() || 'Storm Football League';
     document.title = name;
     mobileTitle.textContent = name;
     saveState();
