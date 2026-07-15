@@ -401,6 +401,62 @@ details.legend[open] summary::before{ content:"▾ "; }
 .msr-cards .box.y{ background: var(--yellow); margin-left:6px; }
 .msr-cards .box.r{ background: var(--red); margin-left:6px; }
 
+/* ---------- Playoffs / bracket ---------- */
+.playoff-controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.bracket{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:18px;
+  align-items:start;
+  margin-bottom:18px;
+}
+.bracket-col{ display:flex; flex-direction:column; gap:16px; }
+.bracket-col-mid{ padding-top:52px; }
+.bracket-match{
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding:14px 16px;
+}
+.bracket-match.decided{ border-color: var(--lime-dim); background: linear-gradient(180deg, var(--panel), rgba(58,169,224,0.03)); }
+.bracket-match-title{
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; letter-spacing:1px; text-transform:uppercase;
+  color: var(--muted); margin-bottom:10px;
+}
+.bracket-team{
+  display:flex; align-items:center; gap:8px;
+  padding:6px 0;
+}
+.bracket-team.tbd{ color: var(--muted-2); }
+.bt-name{ flex:1; font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px; }
+.bracket-team.winner .bt-name{ color: var(--lime); }
+.seed-badge{
+  font-family:'JetBrains Mono', monospace; font-size:10px;
+  color: var(--muted-2); background: var(--bg-alt); border:1px solid var(--line);
+  border-radius:4px; padding:1px 5px; flex-shrink:0;
+}
+.win-tick{ color: var(--lime); font-weight:700; font-size:13px; }
+.bracket-team .score-input.small{ width:42px; padding:6px 4px; }
+.bt-vs{ text-align:center; color: var(--muted-2); font-size:10px; font-family:'JetBrains Mono',monospace; margin:2px 0; }
+.draw-decision{
+  margin-top:10px; padding-top:10px; border-top:1px dashed var(--line-soft);
+  font-size:11px; color: var(--muted);
+}
+.draw-btns{ display:flex; gap:8px; margin-top:8px; }
+.draw-btns button{ flex:1; padding:7px 8px; font-size:12px; }
+.champion-banner{
+  margin-top:14px; text-align:center;
+  border:1px solid var(--lime-dim); border-radius: var(--radius);
+  background: linear-gradient(160deg, rgba(58,169,224,0.12), var(--panel));
+  padding:16px; font-weight:700; font-size:15px; color: var(--lime);
+}
+.eliminated-tag{
+  font-family:'JetBrains Mono', monospace; font-size:10px;
+  color: var(--red); border:1px solid rgba(255,90,60,0.35); border-radius:4px;
+  padding:2px 6px;
+}
+
 /* ============ RESPONSIVE — tablet & below ============ */
 @media (max-width: 860px){
   .mobile-bar{ display:flex; }
@@ -415,6 +471,8 @@ details.legend[open] summary::before{ content:"▾ "; }
   .sidebar.open{ transform: translateX(0); }
   .content{ padding: 18px 14px 70px; }
   .dash-grid{ grid-template-columns: 1fr; }
+  .bracket{ grid-template-columns: 1fr; }
+  .bracket-col-mid{ padding-top:0; }
 }
 
 /* ============ RESPONSIVE — phones ============ */
@@ -481,4 +539,8 @@ details.legend[open] summary::before{ content:"▾ "; }
   /* ----- Standings: swap the wide table for the stacked card list ----- */
   .desktop-table{ display:none; }
   .standings-mobile{ display:block; }
+
+  /* ----- Playoffs ----- */
+  .playoff-controls{ flex-direction:column; align-items:stretch; }
+  .playoff-controls button{ width:100%; }
 }
