@@ -46,6 +46,10 @@
         <svg viewBox="0 0 24 24"><path d="M4 21V11M12 21V4M20 21v-7"/></svg>
         <span>Table</span>
       </button>
+      <button class="nav-item" data-view="playoffs" id="navPlayoffsBtn" disabled>
+        <svg viewBox="0 0 24 24"><path d="M6 3h12v4a6 6 0 0 1-6 6 6 6 0 0 1-6-6V3z"/><path d="M6 5H3v1a4 4 0 0 0 4 4M18 5h3v1a4 4 0 0 0-4 4"/><path d="M12 13v4M9 21h6M10 17h4v4h-4z"/></svg>
+        <span>Playoffs</span>
+      </button>
     </nav>
 
     <div class="side-footer">
@@ -179,6 +183,34 @@
             <li><b>Discipline</b> — fewest red cards first, then fewest yellow cards.</li>
           </ol>
         </details>
+      </div>
+    </section>
+
+    <!-- PLAYOFFS -->
+    <section class="view" id="view-playoffs">
+      <div class="view-head">
+        <h1>Playoffs</h1>
+        <p>The top 4 from the table go into a knockout. Everyone else is eliminated.</p>
+      </div>
+
+      <div id="playoffsEmpty" class="empty-card">
+        <div class="empty-icon">🏆</div>
+        <h3>Need at least 4 teams</h3>
+        <p>Add more teams and play some fixtures — the top 4 in the table will seed the playoff bracket.</p>
+      </div>
+
+      <div id="playoffsContent" style="display:none;">
+        <div class="card playoff-controls">
+          <button class="primary" id="generatePlayoffsBtn">Generate playoffs from current table</button>
+          <button class="side-btn danger" id="resetPlayoffsBtn" style="display:none;">Clear bracket</button>
+        </div>
+
+        <div class="bracket" id="bracketContainer"></div>
+
+        <div class="card" id="missedPlayoffsCard" style="display:none;">
+          <div class="card-label">Missed the playoffs</div>
+          <div id="missedPlayoffsList"></div>
+        </div>
       </div>
     </section>
 
