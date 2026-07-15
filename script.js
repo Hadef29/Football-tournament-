@@ -2,6 +2,7 @@
   // ---------------- State ----------------
   let teams = [];
   let matches = [];
+  let playoffs = null; // { seeds:[t1,t2,t3,t4], q1:{}, elim:{}, q2:{}, final:{} } or null
   let activeView = 'dashboard';
 
   const el = id => document.getElementById(id);
@@ -34,6 +35,14 @@
   const sidebar = el('sidebar');
   const scrim = el('scrim');
   const hamburgerBtn = el('hamburgerBtn');
+  const navPlayoffsBtn = el('navPlayoffsBtn');
+  const playoffsEmpty = el('playoffsEmpty');
+  const playoffsContent = el('playoffsContent');
+  const generatePlayoffsBtn = el('generatePlayoffsBtn');
+  const resetPlayoffsBtn = el('resetPlayoffsBtn');
+  const bracketContainer = el('bracketContainer');
+  const missedPlayoffsCard = el('missedPlayoffsCard');
+  const missedPlayoffsList = el('missedPlayoffsList');
 
   // The league name is fixed and cannot be edited from the page.
   const LEAGUE_NAME = 'Storm Football League';
@@ -44,7 +53,7 @@
   function saveState(){
     try{
       const data = {
-        teams, matches,
+        teams, matches, playoffs,
         doubleRound: doubleRoundToggle.checked
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -62,6 +71,7 @@
       if(!Array.isArray(data.teams)) return false;
       teams = data.teams;
       matches = Array.isArray(data.matches) ? data.matches : [];
+      playoffs = data.playoffs || null;
       doubleRoundToggle.checked = !!data.doubleRound;
       return true;
     }catch(e){
@@ -77,10 +87,11 @@
 
   // ---------------- Navigation ----------------
   function switchView(view){
-    if((view === 'fixtures' && navFixturesBtn.disabled) || (view === 'table' && navTableBtn.disabled)) return;
+    if((view === 'fixtures' && navFixturesBtn.disabled) || (view === 'table' && navTableBtn.disabled) || (view === 'playoffs' && navPlayoffsBtn.disabled)) return;
     activeView = view;
     document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === view));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+    if(view === 'playoffs') renderPlayoffs();
     closeSidebar();
   }
   document.querySelectorAll('.nav-item').forEach(b=>{
@@ -115,9 +126,11 @@
   function removeTeam(name){
     teams = teams.filter(t => t !== name);
     matches = [];
+    playoffs = null;
     navFixturesBtn.disabled = true;
     navTableBtn.disabled = true;
-    if(activeView === 'fixtures' || activeView === 'table') switchView('teams');
+    navPlayoffsBtn.disabled = true;
+    if(activeView === 'fixtures' || activeView === 'table' || activeView === 'playoffs') switchView('teams');
     renderTeams();
     computeStandings();
     saveState();
@@ -177,6 +190,7 @@
     }
 
     matches = [];
+    playoffs = null;
     let id = 0;
     allRounds.forEach((round, ridx)=>{
       round.forEach(m=>{
@@ -194,6 +208,7 @@
     computeStandings();
     navFixturesBtn.disabled = false;
     navTableBtn.disabled = false;
+    navPlayoffsBtn.disabled = teams.length < 4;
     switchView('fixtures');
     saveState();
   }
@@ -204,9 +219,11 @@
     if(!confirm('This clears all teams, fixtures and results. Continue?')) return;
     teams = [];
     matches = [];
+    playoffs = null;
     renderTeams();
     navFixturesBtn.disabled = true;
     navTableBtn.disabled = true;
+    navPlayoffsBtn.disabled = true;
     computeStandings();
     switchView('dashboard');
     clearSavedState();
@@ -335,7 +352,7 @@
   }
 
   // ---------------- Standings computation ----------------
-  function computeStandings(){
+  function getRankedStandings(){
     const stats = {};
     teams.forEach(t=>{
       stats[t] = { name:t, played:0, won:0, drawn:0, lost:0, gf:0, ga:0, gd:0, pts:0, yellow:0, red:0 };
@@ -359,6 +376,11 @@
     Object.values(stats).forEach(s => s.gd = s.gf - s.ga);
 
     const ranked = tieBreakSort(Object.values(stats), playedMatches, 0);
+    return { ranked, playedMatches };
+  }
+
+  function computeStandings(){
+    const { ranked, playedMatches } = getRankedStandings();
     renderStandings(ranked);
     renderStandingsMobile(ranked);
     renderDashboard(ranked, playedMatches);
@@ -533,9 +555,201 @@
     }
   }
 
+  // ---------------- Playoffs (top-4 knockout) ----------------
+  // Qualifier 1: seed 1 v seed 2 — winner goes straight to the Final.
+  // Eliminator: seed 3 v seed 4 — loser is out, winner gets a second chance.
+  // Qualifier 2: loser of Qualifier 1 v winner of Eliminator — winner reaches the Final.
+  // Final: winner of Qualifier 1 v winner of Qualifier 2.
+  // Seeds 5th and below never play — they're eliminated the moment the bracket is set.
+
+  function emptyBracketMatch(home, away){
+    return { home: home || null, away: away || null, hg: null, ag: null, decided: null };
+  }
+
+  function matchWinner(m){
+    if(!m || !m.home || !m.away || m.hg === null || m.ag === null) return null;
+    if(m.hg > m.ag) return 'home';
+    if(m.hg < m.ag) return 'away';
+    return m.decided || null;
+  }
+
+  function matchWinnerName(m){
+    const w = matchWinner(m);
+    if(!w) return null;
+    return w === 'home' ? m.home : m.away;
+  }
+  function matchLoserName(m){
+    const w = matchWinner(m);
+    if(!w) return null;
+    return w === 'home' ? m.away : m.home;
+  }
+
+  function setParticipant(match, side, team){
+    if(match[side] !== team){
+      match[side] = team || null;
+      match.hg = null; match.ag = null; match.decided = null;
+    }
+  }
+
+  function recalcBracket(){
+    if(!playoffs) return;
+    const p = playoffs;
+    setParticipant(p.q2, 'home', matchLoserName(p.q1));
+    setParticipant(p.q2, 'away', matchWinnerName(p.elim));
+    setParticipant(p.final, 'home', matchWinnerName(p.q1));
+    setParticipant(p.final, 'away', matchWinnerName(p.q2));
+  }
+
+  function generatePlayoffs(){
+    const alreadyStarted = playoffs && (playoffs.q1.hg !== null || playoffs.elim.hg !== null || playoffs.q2.hg !== null || playoffs.final.hg !== null);
+    if(alreadyStarted && !confirm('This resets your current bracket and reseeds from the league table. Continue?')) return;
+
+    const { ranked } = getRankedStandings();
+    if(ranked.length < 4) return;
+    const seeds = ranked.slice(0, 4).map(s => s.name);
+
+    playoffs = {
+      seeds,
+      q1: emptyBracketMatch(seeds[0], seeds[1]),
+      elim: emptyBracketMatch(seeds[2], seeds[3]),
+      q2: emptyBracketMatch(null, null),
+      final: emptyBracketMatch(null, null)
+    };
+    recalcBracket();
+    renderPlayoffs();
+    saveState();
+  }
+
+  generatePlayoffsBtn.addEventListener('click', generatePlayoffs);
+
+  resetPlayoffsBtn.addEventListener('click', ()=>{
+    if(!confirm('This clears the playoff bracket. Continue?')) return;
+    playoffs = null;
+    renderPlayoffs();
+    saveState();
+  });
+
+  function onBracketScoreChange(e){
+    const key = e.target.dataset.bracket;
+    const field = e.target.dataset.field;
+    const val = e.target.value;
+    playoffs[key][field] = val === '' ? null : Math.max(0, parseInt(val, 10) || 0);
+    playoffs[key].decided = null;
+    recalcBracket();
+    renderPlayoffs();
+    saveState();
+  }
+
+  function onBracketDecide(e){
+    const key = e.currentTarget.dataset.bracket;
+    const side = e.currentTarget.dataset.decide;
+    playoffs[key].decided = side;
+    recalcBracket();
+    renderPlayoffs();
+    saveState();
+  }
+
+  function seedBadge(team){
+    if(!playoffs) return '';
+    const idx = playoffs.seeds.indexOf(team);
+    return idx >= 0 ? `<span class="seed-badge">#${idx + 1}</span>` : '';
+  }
+
+  function renderBracketMatch(key, title){
+    const m = playoffs[key];
+    const ready = !!(m.home && m.away);
+    const winner = matchWinner(m);
+    const isDraw = ready && m.hg !== null && m.ag !== null && m.hg === m.ag && !winner;
+
+    const teamRow = (side)=>{
+      const team = m[side];
+      const isWinner = winner === side;
+      return `
+        <div class="bracket-team ${isWinner ? 'winner' : ''} ${!team ? 'tbd' : ''}">
+          <span class="bt-name">${team ? seedBadge(team) + escapeHtml(team) : 'TBD'}</span>
+          ${ready ? `<input type="number" min="0" class="score-input small" data-bracket="${key}" data-field="${side === 'home' ? 'hg' : 'ag'}" value="${(side === 'home' ? m.hg : m.ag) ?? ''}" placeholder="–">` : ''}
+          ${isWinner ? '<span class="win-tick">✓</span>' : ''}
+        </div>`;
+    };
+
+    return `
+      <div class="bracket-match ${winner ? 'decided' : ''}">
+        <div class="bracket-match-title">${title}</div>
+        ${teamRow('home')}
+        <div class="bt-vs">v</div>
+        ${teamRow('away')}
+        ${isDraw ? `
+          <div class="draw-decision">
+            <span>Level — who goes through?</span>
+            <div class="draw-btns">
+              <button type="button" data-bracket="${key}" data-decide="home">${escapeHtml(m.home)}</button>
+              <button type="button" data-bracket="${key}" data-decide="away">${escapeHtml(m.away)}</button>
+            </div>
+          </div>` : ''}
+      </div>`;
+  }
+
+  function championBanner(){
+    const champ = matchWinnerName(playoffs.final);
+    if(!champ) return '';
+    return `<div class="champion-banner">🏆 <span>${escapeHtml(champ)}</span> are champions!</div>`;
+  }
+
+  function renderPlayoffs(){
+    if(!bracketContainer) return;
+    const { ranked } = getRankedStandings();
+    const hasEnough = teams.length >= 4;
+
+    playoffsEmpty.style.display = hasEnough ? 'none' : 'block';
+    playoffsContent.style.display = hasEnough ? 'block' : 'none';
+    if(!hasEnough) return;
+
+    generatePlayoffsBtn.textContent = playoffs ? 'Re-seed from current table' : 'Generate playoffs from current table';
+    resetPlayoffsBtn.style.display = playoffs ? 'inline-flex' : 'none';
+
+    if(!playoffs){
+      bracketContainer.innerHTML = `<div class="empty-state">Generate the bracket to seed the top 4 from the table.</div>`;
+      missedPlayoffsCard.style.display = 'none';
+      return;
+    }
+
+    bracketContainer.innerHTML = `
+      <div class="bracket-col">
+        ${renderBracketMatch('q1', 'Qualifier 1 · #1 v #2')}
+        ${renderBracketMatch('elim', 'Eliminator · #3 v #4')}
+      </div>
+      <div class="bracket-col bracket-col-mid">
+        ${renderBracketMatch('q2', 'Qualifier 2')}
+      </div>
+      <div class="bracket-col">
+        ${renderBracketMatch('final', 'Final')}
+        ${championBanner()}
+      </div>
+    `;
+
+    bracketContainer.querySelectorAll('.score-input').forEach(inp=>{
+      inp.addEventListener('input', onBracketScoreChange);
+    });
+    bracketContainer.querySelectorAll('[data-decide]').forEach(btn=>{
+      btn.addEventListener('click', onBracketDecide);
+    });
+
+    const missed = ranked.slice(4);
+    missedPlayoffsCard.style.display = missed.length ? 'block' : 'none';
+    if(missed.length){
+      missedPlayoffsList.innerHTML = missed.map((s, idx)=>`
+        <div class="mini-row">
+          <span class="pos">${idx + 5}</span>
+          <span class="name">${escapeHtml(s.name)}</span>
+          <span class="eliminated-tag">Eliminated</span>
+        </div>
+      `).join('');
+    }
+  }
+
   // ---------------- Export / Import ----------------
   exportBtn.addEventListener('click', ()=>{
-    const data = { leagueName: LEAGUE_NAME, teams, matches, doubleRound: doubleRoundToggle.checked };
+    const data = { leagueName: LEAGUE_NAME, teams, matches, playoffs, doubleRound: doubleRoundToggle.checked };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -555,10 +769,12 @@
         if(!Array.isArray(data.teams) || !Array.isArray(data.matches)) throw new Error('bad format');
         teams = data.teams;
         matches = data.matches;
+        playoffs = data.playoffs || null;
         doubleRoundToggle.checked = !!data.doubleRound;
         renderTeams();
         navFixturesBtn.disabled = matches.length === 0;
         navTableBtn.disabled = matches.length === 0;
+        navPlayoffsBtn.disabled = teams.length < 4;
         if(matches.length) renderFixtures();
         computeStandings();
         switchView(matches.length ? 'table' : 'teams');
@@ -579,6 +795,7 @@
     navFixturesBtn.disabled = false;
     navTableBtn.disabled = false;
   }
+  navPlayoffsBtn.disabled = teams.length < 4;
   computeStandings();
   if(restored && teams.length){
     switchView('dashboard');
